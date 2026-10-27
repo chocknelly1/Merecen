@@ -1,0 +1,24 @@
+
+      - name: Extraer proyecto Android
+        run: |
+          set -e
+          echo "Buscando el archivo ZIP..."
+          ZIP="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+          if [ -z "$ZIP" ]; then
+            echo "ERROR: No se encuentra ningún ZIP en la raíz del repositorio."
+            ls -la
+            exit 1
+          fi
+          echo "ZIP encontrado: $ZIP"
+          mkdir -p source
+          unzip -q "$ZIP" -d source
+          ROOT="$(find source -name settings.gradle -type f -print -quit | xargs dirname)"
+          if [ -z "$ROOT" ] || [ ! -f "$ROOT/app/build.gradle" ]; then
+            echo "ERROR: No se encontró la estructura del proyecto Android."
+            find source -maxdepth 4 -type f
+            exit 1
+          fi
+          cp "$ROOT/settings.gradle" .
+          cp "$ROOT/build.gradle" .
+          cp "$ROOT/gradle.properties" .
+          cp -R "$ROOT/app" .
